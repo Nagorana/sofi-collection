@@ -1,0 +1,60 @@
+# Sofi Collection Tracker
+
+Site statique de suivi de complétion Sofi, déployé sur GitHub Pages.
+
+## Structure
+
+```
+sofi-collection/
+├── index.html        ← page d'accueil (liste des joueurs)
+├── player.html       ← page de collection d'un joueur
+├── data/
+│   ├── 486150781700145163.json   ← Nago
+│   └── ...                       ← autres joueurs
+└── README.md
+```
+
+## Déploiement GitHub Pages
+
+1. Créer un repo public `sofi-collection` sur GitHub
+2. Push tous les fichiers
+3. Dans Settings → Pages → Source : `main` / `root`
+4. URL : `https://TON_PSEUDO.github.io/sofi-collection`
+
+## Ajouter un joueur
+
+1. Dans `index.html` → tableau `PLAYERS`, changer `visible: false` en `visible: true` et ajouter le `name` et `slug`
+2. Dans `player.html` → objet `PLAYERS`, ajouter une ligne `'slug': { id: 'DISCORD_ID', name: 'Pseudo' }`
+
+## Sync depuis le bot Discord (API GitHub)
+
+```js
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO = 'TON_PSEUDO/sofi-collection';
+
+async function pushJson(userId, data) {
+  const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
+  const path = `data/${userId}.json`;
+
+  // Récupérer le SHA actuel (requis pour update)
+  const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+    headers: { Authorization: `token ${GITHUB_TOKEN}` }
+  });
+  const existing = await getRes.json();
+
+  await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${GITHUB_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      message: `update ${userId} ${new Date().toISOString()}`,
+      content,
+      sha: existing.sha  // undefined si nouveau fichier = pas de problème
+    })
+  });
+}
+```
+
+Appeler `pushJson(userId, collectionData)` après chaque scan.
