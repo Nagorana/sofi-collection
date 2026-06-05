@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sofi Tracker — Connexion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0c12;
+      --surface: #111520;
+      --border: #1e2840;
+      --accent: #4e7cff;
+      --accent2: #7b5cff;
+      --text: #c8d4f0;
+      --text-muted: #5a6a8a;
+      --complete: #3dffa0;
+      --error: #ff4e6a;
+    }
+
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(78,124,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(78,124,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 380px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 10px 10px 0 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    .logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-transform: uppercase;
+      display: inline-block;
+      padding: 3px 10px;
+      border: 1px solid rgba(78,124,255,0.3);
+      border-radius: 2px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 40%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      background: #0d1018;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: 'Exo 2', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 20px;
+    }
+
+    input:focus { border-color: var(--accent); }
+
+    .btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 4px;
+    }
+
+    .btn:hover { opacity: 0.85; }
+
+    .error-msg {
+      background: rgba(255,78,106,0.1);
+      border: 1px solid rgba(255,78,106,0.3);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--error);
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Sofi Bot</div>
+    <h1>Connexion</h1>
+    <p class="subtitle">Accès réservé au dépôt de données</p>
+
+    <div class="error-msg" id="errorMsg">Identifiants incorrects.</div>
+
+    <form id="loginForm">
+      <label for="username">Identifiant</label>
+      <input type="text" id="username" placeholder="Identifiant" autocomplete="username" />
+
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+
+      <button class="btn" type="submit">SE CONNECTER</button>
+    </form>
+
+    <a class="back" href="index.html">← Retour au tracker</a>
+  </div>
+
+  <script>
+    // ⚙️ IDENTIFIANTS — modifier ici
+    const CREDENTIALS = [
+      { user: 'admin', pass: 'sofi' },
+      // Ajouter d'autres comptes :
+      // { user: 'nago', pass: 'motdepasse' },
+    ];
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+      const ok = CREDENTIALS.some(c => c.user === u && c.pass === p);
+      if (ok) {
+        sessionStorage.setItem('sofi_auth', '1');
+        const next = new URLSearchParams(location.search).get('next') || 'upload.html';
+        location.href = next;
+      } else {
+        const err = document.getElementById('errorMsg');
+        err.style.display = 'block';
+        document.getElementById('password').value = '';
+      }
+    });
+  </script>
+</body>
+</html>
