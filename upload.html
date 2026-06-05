@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sofi Tracker — Dépôt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet" />
+  <!-- SheetJS pour lire les fichiers Excel côté client -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0c12;
+      --surface: #111520;
+      --surface2: #171d2e;
+      --border: #1e2840;
+      --accent: #4e7cff;
+      --accent2: #7b5cff;
+      --text: #c8d4f0;
+      --text-muted: #5a6a8a;
+      --text-dim: #8a9ab8;
+      --complete: #3dffa0;
+      --complete-bg: rgba(61,255,160,0.08);
+      --error: #ff4e6a;
+    }
+
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(78,124,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(78,124,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--accent); }
+    .back-btn svg { width: 16px; height: 16px; }
+
+    .site-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .logout-btn {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-family: 'Exo 2', sans-serif;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+    h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 40%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+    }
+
+    /* Section */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    /* Player selector */
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .player-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      font-family: 'Exo 2', sans-serif;
+    }
+
+    .player-btn:hover { border-color: var(--accent); }
+    .player-btn.selected { background: rgba(78,124,255,0.12); border-color: var(--accent); }
+
+    .player-btn .pname {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      display: block;
+    }
+
+    .player-btn .pid {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(78,124,255,0.04);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .drop-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .drop-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .drop-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* File info */
+    .file-info {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-top: 14px;
+    }
+
+    .file-info.visible { display: flex; }
+
+    .file-icon { font-size: 24px; }
+
+    .file-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .file-size {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Preview */
+    .preview-wrap {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .preview-wrap.visible { display: block; }
+
+    .preview-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .pstat {
+      background: var(--surface2);
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .pstat .val {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      display: block;
+    }
+
+    .pstat .val.green { color: var(--complete); }
+    .pstat .val.blue { color: var(--accent); }
+
+    .pstat .lbl {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .preview-table-wrap {
+      max-height: 280px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .preview-table th {
+      position: sticky;
+      top: 0;
+      background: var(--surface2);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .preview-table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid rgba(30,40,64,0.4);
+      color: var(--text-dim);
+    }
+
+    .preview-table tr.done td { color: var(--complete); }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 6px;
+      padding: 11px 22px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 11px 22px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--accent); color: var(--text); }
+
+    /* Alert */
+    .alert {
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .alert.visible { display: block; }
+    .alert.success { background: var(--complete-bg); border: 1px solid rgba(61,255,160,0.3); color: var(--complete); }
+    .alert.error   { background: rgba(255,78,106,0.08); border: 1px solid rgba(255,78,106,0.3); color: var(--error); }
+    .alert.info    { background: rgba(78,124,255,0.08); border: 1px solid rgba(78,124,255,0.3); color: var(--accent); }
+
+    /* Instructions */
+    .instr {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .instr code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    ol.instr { padding-left: 18px; }
+    ol.instr li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="topbar-left">
+        <a class="back-btn" href="index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+          Retour
+        </a>
+        <span class="site-name">SOFI TRACKER</span>
+      </div>
+      <button class="logout-btn" id="logoutBtn">Déconnexion</button>
+    </div>
+
+    <h1>Dépôt de données</h1>
+    <p class="page-sub">Importe un fichier Excel de collection Sofi et génère le JSON correspondant.</p>
+
+    <div class="alert" id="alertBox"></div>
+
+    <!-- Étape 1 : choisir le joueur -->
+    <div class="section">
+      <div class="section-title">1 — Joueur concerné</div>
+      <div class="player-grid" id="playerGrid"></div>
+    </div>
+
+    <!-- Étape 2 : déposer le fichier -->
+    <div class="section">
+      <div class="section-title">2 — Fichier Excel</div>
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".xlsx,.xls" />
+        <div class="drop-icon">📂</div>
+        <div class="drop-label">Glisse le fichier Excel ici</div>
+        <div class="drop-hint">ou clique pour parcourir · .xlsx / .xls</div>
+      </div>
+
+      <div class="file-info" id="fileInfo">
+        <span class="file-icon">📊</span>
+        <div>
+          <div class="file-name" id="fileName"></div>
+          <div class="file-size" id="fileSize"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Étape 3 : aperçu -->
+    <div class="section" id="previewSection" style="display:none">
+      <div class="section-title">3 — Aperçu &amp; Téléchargement</div>
+
+      <div class="preview-wrap visible" id="previewWrap">
+        <div class="preview-stats" id="previewStats"></div>
+
+        <div class="preview-table-wrap">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>Série</th>
+                <th>Possédées</th>
+                <th>Total</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="downloadBtn">⬇ Télécharger le JSON</button>
+          <button class="btn-secondary" id="resetBtn">Recommencer</button>
+        </div>
+      </div>
+
+      <div class="instr" style="margin-top: 20px;">
+        <strong style="color: var(--text-dim);">Après téléchargement :</strong>
+        <ol class="instr" style="margin-top:8px">
+          <li>Renomme le fichier avec l'ID Discord du joueur : ex. <code>486150781700145163.json</code></li>
+          <li>Place-le dans le dossier <code>data/</code> de ton dépôt GitHub</li>
+          <li>Commit &amp; push — le tracker se met à jour automatiquement</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Auth ─────────────────────────────────────────────
+    if (!sessionStorage.getItem('sofi_auth')) {
+      location.href = 'login.html?next=upload.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      sessionStorage.removeItem('sofi_auth');
+      location.href = 'login.html';
+    });
+
+    // ── Config joueurs ────────────────────────────────────
+    const PLAYERS = [
+      { id: '486150781700145163', name: 'Nago' },
+      { id: '677130114529493024', name: 'Spaga' },
+    ];
+
+    let selectedPlayer = null;
+    let parsedData = null;
+
+    // Render player buttons
+    const grid = document.getElementById('playerGrid');
+    PLAYERS.forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'player-btn';
+      btn.dataset.id = p.id;
+      btn.innerHTML = `<span class="pname">${p.name}</span><span class="pid">${p.id}</span>`;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedPlayer = p;
+      });
+      grid.appendChild(btn);
+    });
+
+    // ── File drop / input ─────────────────────────────────
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!selectedPlayer) {
+        showAlert('Sélectionne d\'abord un joueur.', 'error');
+        return;
+      }
+
+      // Show file info
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' Ko';
+      document.getElementById('fileInfo').classList.add('visible');
+
+      const reader = new FileReader();
+      reader.onload = e => parseExcel(e.target.result, file.name);
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ── Excel parsing ─────────────────────────────────────
+    function parseExcel(buffer, filename) {
+      try {
+        const wb = XLSX.read(buffer, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+        const collection = [];
+
+        // Structure : groupes de 5 colonnes (Ratio, Nom, WL, vide, %)
+        // Ligne 0 = entêtes de groupe, Ligne 1+ = données
+        const GROUP_SIZE = 5;
+        const headerRow = rows[0] || [];
+        // Compter les groupes
+        const numGroups = Math.floor(headerRow.length / GROUP_SIZE);
+
+        for (let row = 1; row < rows.length; row++) {
+          const r = rows[row];
+          if (!r) continue;
+
+          for (let g = 0; g < numGroups; g++) {
+            const baseCol = g * GROUP_SIZE;
+            const ratio = r[baseCol];        // ex: "854/854"
+            const name  = r[baseCol + 1];   // ex: "Valkyrie Crusade"
+
+            if (!name || typeof name !== 'string' || !name.trim()) continue;
+            if (!ratio || typeof ratio !== 'string') continue;
+
+            const parts = ratio.split('/');
+            if (parts.length !== 2) continue;
+
+            const owned = parseInt(parts[0].trim(), 10);
+            const total = parseInt(parts[1].trim(), 10);
+            if (isNaN(owned) || isNaN(total) || total === 0) continue;
+
+            const percent = Math.round((owned / total) * 100);
+
+            collection.push({
+              name: name.trim(),
+              owned,
+              total,
+              percent,
+            });
+          }
+        }
+
+        if (collection.length === 0) {
+          showAlert('Aucune série trouvée dans ce fichier. Vérifie le format.', 'error');
+          return;
+        }
+
+        // Sort by percent desc
+        collection.sort((a, b) => b.percent - a.percent);
+
+        parsedData = {
+          lastScan: new Date().toISOString(),
+          collection,
+        };
+
+        renderPreview(collection);
+        showAlert(`${collection.length} séries importées depuis "${filename}".`, 'success');
+
+      } catch (err) {
+        showAlert('Erreur lors de la lecture du fichier : ' + err.message, 'error');
+      }
+    }
+
+    // ── Preview ───────────────────────────────────────────
+    function renderPreview(collection) {
+      const owned = collection.reduce((s, x) => s + x.owned, 0);
+      const total = collection.reduce((s, x) => s + x.total, 0);
+      const completed = collection.filter(x => x.percent === 100).length;
+      const pct = total ? (owned / total * 100).toFixed(1) : 0;
+
+      document.getElementById('previewStats').innerHTML = `
+        <div class="pstat"><span class="val blue">${pct}%</span><span class="lbl">Complétion</span></div>
+        <div class="pstat"><span class="val green">${completed}</span><span class="lbl">Séries complètes</span></div>
+        <div class="pstat"><span class="val">${collection.length}</span><span class="lbl">Total séries</span></div>
+      `;
+
+      const tbody = document.getElementById('previewBody');
+      tbody.innerHTML = collection.slice(0, 50).map(s => `
+        <tr class="${s.percent === 100 ? 'done' : ''}">
+          <td>${s.name}${s.percent === 100 ? ' ✓' : ''}</td>
+          <td>${s.owned.toLocaleString('fr')}</td>
+          <td>${s.total.toLocaleString('fr')}</td>
+          <td>${s.percent}%</td>
+        </tr>
+      `).join('') + (collection.length > 50
+        ? `<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:10px">… et ${collection.length - 50} autres séries</td></tr>`
+        : '');
+
+      document.getElementById('previewSection').style.display = '';
+      document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ── Download ──────────────────────────────────────────
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      if (!parsedData || !selectedPlayer) return;
+
+      const json = JSON.stringify(parsedData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedPlayer.id}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showAlert(`Fichier "${selectedPlayer.id}.json" téléchargé. Place-le dans data/ de ton dépôt.`, 'success');
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      parsedData = null;
+      fileInput.value = '';
+      document.getElementById('fileInfo').classList.remove('visible');
+      document.getElementById('previewSection').style.display = 'none';
+      document.getElementById('alertBox').classList.remove('visible');
+    });
+
+    // ── Alert helper ──────────────────────────────────────
+    function showAlert(msg, type) {
+      const box = document.getElementById('alertBox');
+      box.textContent = msg;
+      box.className = `alert visible ${type}`;
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  </script>
+</body>
+</html>
