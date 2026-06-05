@@ -558,8 +558,8 @@
         // Ligne 0 = entêtes de groupe, Ligne 1+ = données
         const GROUP_SIZE = 5;
         const headerRow = rows[0] || [];
-        // Compter les groupes
-        const numGroups = Math.floor(headerRow.length / GROUP_SIZE);
+        // Compte les "Ratio" dans l'entête pour ne pas rater le dernier groupe incomplet
+        const numGroups = headerRow.filter(v => v === 'Ratio').length || Math.ceil(headerRow.length / GROUP_SIZE);
 
         for (let row = 1; row < rows.length; row++) {
           const r = rows[row];
