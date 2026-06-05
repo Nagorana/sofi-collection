@@ -470,7 +470,7 @@
 
     async function loadPlayer(p) {
       try {
-        const res = await fetch(`data/${p.id}.json`);
+        const res = await fetch(`data/${p.id}.json?v=${Date.now()}`);
         const data = await res.json();
         allSeries = data.collection || [];
         document.title = `Sofi — ${p.name}`;

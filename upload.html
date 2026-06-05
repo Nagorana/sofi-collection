@@ -194,6 +194,16 @@
     let selectedPlayer = null;
     let parsedData     = null;
 
+    // ── Token persistence ─────────────────────────────────
+    const tokenInput = document.getElementById('tokenInput');
+    const saved = localStorage.getItem('sofi_gh_token');
+    if (saved) tokenInput.value = saved;
+    tokenInput.addEventListener('input', () => {
+      const v = tokenInput.value.trim();
+      if (v) localStorage.setItem('sofi_gh_token', v);
+      else localStorage.removeItem('sofi_gh_token');
+    });
+
     // ── Players ───────────────────────────────────────────
     PLAYERS.forEach(p => {
       const btn = document.createElement('button');
