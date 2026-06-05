@@ -183,17 +183,26 @@
 
   <script>
     // ⚙️ IDENTIFIANTS — modifier ici
+    // Les mots de passe sont stockés en hash SHA-256 (pas en clair).
+    // Pour générer le hash d'un nouveau mot de passe :
+    //   https://emn178.github.io/online-tools/sha256.html
     const CREDENTIALS = [
-      { user: 'admin', pass: 'sofi' },
+      { user: 'admin', hash: 'bb3c82841b3bc954b36c86745a956d2406bf31ac2b513d08a464decc48e8ea92' }, // sofi
       // Ajouter d'autres comptes :
-      // { user: 'nago', pass: 'motdepasse' },
+      // { user: 'nago', hash: '<hash_sha256_du_mot_de_passe>' },
     ];
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
-      const ok = CREDENTIALS.some(c => c.user === u && c.pass === p);
+      const h = await sha256(p);
+      const ok = CREDENTIALS.some(c => c.user === u && c.hash === h);
       if (ok) {
         sessionStorage.setItem('sofi_auth', '1');
         const next = new URLSearchParams(location.search).get('next') || 'upload.html';
