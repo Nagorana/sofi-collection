@@ -1,60 +1,390 @@
-# Sofi Collection Tracker 
 
-Site statique de suivi de complétion Sofi, déployé sur GitHub Pages.
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sofi Collection Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-## Structure
+    :root {
+      --bg: #0a0c12;
+      --surface: #111520;
+      --surface2: #171d2e;
+      --border: #1e2840;
+      --accent: #4e7cff;
+      --accent2: #7b5cff;
+      --gold: #E8FF3C;
+      --text: #c8d4f0;
+      --text-muted: #5a6a8a;
+      --text-dim: #8a9ab8;
+      --complete: #3dffa0;
+      --anon: #3a4560;
+    }
 
-```
-sofi-collection/
-├── index.html        ← page d'accueil (liste des joueurs)
-├── player.html       ← page de collection d'un joueur
-├── data/
-│   ├── 486150781700145163.json   ← Nago
-│   └── ...                       ← autres joueurs
-└── README.md
-```
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-## Déploiement GitHub Pages
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(78,124,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(78,124,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-1. Créer un repo public `sofi-collection` sur GitHub
-2. Push tous les fichiers
-3. Dans Settings → Pages → Source : `main` / `root`
-4. URL : `https://TON_PSEUDO.github.io/sofi-collection`
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
 
-## Ajouter un joueur
+    /* Header */
+    header {
+      padding: 60px 0 40px;
+      text-align: center;
+    }
 
-1. Dans `index.html` → tableau `PLAYERS`, changer `visible: false` en `visible: true` et ajouter le `name` et `slug`
-2. Dans `player.html` → objet `PLAYERS`, ajouter une ligne `'slug': { id: 'DISCORD_ID', name: 'Pseudo' }`
+    .logo-tag {
+      display: inline-block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      padding: 4px 12px;
+      border: 1px solid rgba(78,124,255,0.3);
+      border-radius: 2px;
+    }
 
-## Sync depuis le bot Discord (API GitHub)
+    h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
 
-```js
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const REPO = 'TON_PSEUDO/sofi-collection';
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
 
-async function pushJson(userId, data) {
-  const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
-  const path = `data/${userId}.json`;
+    /* Players grid */
+    .players-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px;
+      padding: 20px 0 80px;
+    }
 
-  // Récupérer le SHA actuel (requis pour update)
-  const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
-    headers: { Authorization: `token ${GITHUB_TOKEN}` }
-  });
-  const existing = await getRes.json();
+    .player-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
 
-  await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `token ${GITHUB_TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      message: `update ${userId} ${new Date().toISOString()}`,
-      content,
-      sha: existing.sha  // undefined si nouveau fichier = pas de problème
-    })
-  });
-}
-```
+    .player-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
 
-Appeler `pushJson(userId, collectionData)` après chaque scan.
+    .player-card:hover {
+      border-color: rgba(78,124,255,0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(78,124,255,0.12);
+    }
+
+    .player-card:hover::before { opacity: 1; }
+
+    .player-card.anon {
+      opacity: 0.5;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .player-card.anon::before { display: none; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .avatar.anon-avatar {
+      background: var(--anon);
+      font-size: 20px;
+    }
+
+    .player-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .last-scan {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Global progress bar */
+    .global-bar-wrap {
+      margin-bottom: 20px;
+    }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .bar-label span:first-child {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .bar-pct {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .bar-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat-box {
+      background: var(--surface2);
+      border-radius: 6px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+      display: block;
+    }
+
+    .stat-value.highlight { color: var(--complete); }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Animate in */
+    .player-card {
+      animation: fadeUp 0.4s ease both;
+    }
+    .player-card:nth-child(2) { animation-delay: 0.08s; }
+    .player-card:nth-child(3) { animation-delay: 0.16s; }
+    .player-card:nth-child(4) { animation-delay: 0.24s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-tag">Sofi Bot</div>
+      <h1>Collection Tracker</h1>
+      <p class="subtitle">Suivi de complétion des séries • Lecture seule</p>
+    </header>
+
+    <div class="players-grid" id="playersGrid">
+      <!-- Généré par JS -->
+    </div>
+  </div>
+
+  <footer>
+    Données synchronisées via Discord Bot &nbsp;·&nbsp; Lecture seule
+  </footer>
+
+  <script>
+    // ⚙️ CONFIG — modifier ici les noms/slugs
+    const PLAYERS = [
+      { id: '486150781700145163', name: 'Nago',  slug: 'nago',  visible: true },
+      { id: '677130114529493024', name: null,     slug: null,    visible: false },
+      { id: '169757535044239361', name: null,     slug: null,    visible: false },
+      { id: '872125802915958815', name: null,     slug: null,    visible: false },
+    ];
+
+    function initials(name) {
+      return name ? name.slice(0, 2).toUpperCase() : '?';
+    }
+
+    function formatDate(iso) {
+      if (!iso) return 'N/A';
+      const d = new Date(iso);
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    async function loadPlayer(player) {
+      const res = await fetch(`data/${player.id}.json`);
+      const data = await res.json();
+      const col = data.collection || [];
+      const owned = col.reduce((s, x) => s + x.owned, 0);
+      const total = col.reduce((s, x) => s + x.total, 0);
+      const completed = col.filter(x => x.percent === 100).length;
+      const pct = total ? (owned / total * 100).toFixed(1) : 0;
+      return { ...player, owned, total, completed, nb_series: col.length, pct, lastScan: data.lastScan };
+    }
+
+    function renderCard(p) {
+      const grid = document.getElementById('playersGrid');
+      const card = document.createElement(p.visible ? 'a' : 'div');
+      if (p.visible) {
+        card.href = `player.html?p=${p.slug}`;
+      }
+      card.className = 'player-card' + (p.visible ? '' : ' anon');
+
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="avatar ${p.visible ? '' : 'anon-avatar'}">${p.visible ? initials(p.name) : '?'}</div>
+          <div>
+            <div class="player-name">${p.visible ? p.name : 'Joueur anonyme'}</div>
+            <div class="last-scan">Scan : ${p.visible ? formatDate(p.lastScan) : '—'}</div>
+          </div>
+        </div>
+        <div class="global-bar-wrap">
+          <div class="bar-label">
+            <span>Complétion globale</span>
+            <span class="bar-pct">${p.visible ? p.pct + '%' : '—'}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: ${p.visible ? p.pct : 0}%"></div>
+          </div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-box">
+            <span class="stat-value">${p.visible ? p.nb_series.toLocaleString('fr') : '—'}</span>
+            <span class="stat-label">Séries</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-value highlight">${p.visible ? p.completed : '—'}</span>
+            <span class="stat-label">Complètes</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-value">${p.visible ? p.owned.toLocaleString('fr') : '—'}</span>
+            <span class="stat-label">Cartes</span>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+
+    async function init() {
+      for (const p of PLAYERS) {
+        if (p.visible) {
+          try {
+            const data = await loadPlayer(p);
+            renderCard(data);
+          } catch {
+            renderCard({ ...p, owned: 0, total: 0, completed: 0, nb_series: 0, pct: 0, lastScan: null });
+          }
+        } else {
+          renderCard(p);
+        }
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
