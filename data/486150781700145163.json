@@ -1,5 +1,5 @@
 {
-  "lastScan": "2026-06-05T16:19:45.333Z",
+  "lastScan": "2026-06-06T15:04:42.991Z",
   "collection": [
     {
       "name": "Valkyrie Crusade",
@@ -83,6 +83,12 @@
       "name": "Pokemon Generation I",
       "owned": 151,
       "total": 151,
+      "percent": 100
+    },
+    {
+      "name": "Path to Nowhere",
+      "owned": 136,
+      "total": 136,
       "percent": 100
     },
     {
@@ -771,6 +777,12 @@
     },
     {
       "name": "Dreamcatcher",
+      "owned": 7,
+      "total": 7,
+      "percent": 100
+    },
+    {
+      "name": "Yuri is My Job!",
       "owned": 7,
       "total": 7,
       "percent": 100
@@ -2060,14 +2072,8 @@
       "percent": 99
     },
     {
-      "name": "Path to Nowhere",
-      "owned": 135,
-      "total": 136,
-      "percent": 99
-    },
-    {
       "name": "Independent VTubers",
-      "owned": 251,
+      "owned": 252,
       "total": 257,
       "percent": 98
     },
@@ -2108,12 +2114,6 @@
       "percent": 86
     },
     {
-      "name": "Yuri is My Job!",
-      "owned": 6,
-      "total": 7,
-      "percent": 86
-    },
-    {
       "name": "Gokurakugai",
       "owned": 10,
       "total": 12,
@@ -2138,13 +2138,31 @@
       "percent": 80
     },
     {
+      "name": "Dandadan",
+      "owned": 8,
+      "total": 10,
+      "percent": 80
+    },
+    {
       "name": "Animaniacs",
       "owned": 4,
       "total": 5,
       "percent": 80
     },
     {
+      "name": "Girlfriend, Girlfriend",
+      "owned": 4,
+      "total": 5,
+      "percent": 80
+    },
+    {
       "name": "My Happy Marriage",
+      "owned": 4,
+      "total": 5,
+      "percent": 80
+    },
+    {
+      "name": "Teen Titans Go!",
       "owned": 4,
       "total": 5,
       "percent": 80
@@ -2168,10 +2186,10 @@
       "percent": 75
     },
     {
-      "name": "Dandadan",
-      "owned": 7,
-      "total": 10,
-      "percent": 70
+      "name": "Vivy -Fluorite Eye's Song-",
+      "owned": 8,
+      "total": 11,
+      "percent": 73
     },
     {
       "name": "Mystic Messenger",
@@ -2234,12 +2252,6 @@
       "percent": 67
     },
     {
-      "name": "Vivy -Fluorite Eye's Song-",
-      "owned": 7,
-      "total": 11,
-      "percent": 64
-    },
-    {
       "name": "ATEEZ",
       "owned": 5,
       "total": 8,
@@ -2256,6 +2268,18 @@
       "owned": 8,
       "total": 13,
       "percent": 62
+    },
+    {
+      "name": "Rules for Dating Trash",
+      "owned": 3,
+      "total": 5,
+      "percent": 60
+    },
+    {
+      "name": "Five Hearts Under One Roof",
+      "owned": 3,
+      "total": 5,
+      "percent": 60
     },
     {
       "name": "Yuuki Yuuna is a Hero: Bouquet of Brilliance",
@@ -2900,12 +2924,6 @@
       "percent": 40
     },
     {
-      "name": "Rules for Dating Trash",
-      "owned": 2,
-      "total": 5,
-      "percent": 40
-    },
-    {
       "name": "Diamond In The Rough",
       "owned": 2,
       "total": 5,
@@ -2913,18 +2931,6 @@
     },
     {
       "name": "ARTMS",
-      "owned": 2,
-      "total": 5,
-      "percent": 40
-    },
-    {
-      "name": "Five Hearts Under One Roof",
-      "owned": 2,
-      "total": 5,
-      "percent": 40
-    },
-    {
-      "name": "Girlfriend, Girlfriend",
       "owned": 2,
       "total": 5,
       "percent": 40
@@ -2943,12 +2949,6 @@
     },
     {
       "name": "UNIQ",
-      "owned": 2,
-      "total": 5,
-      "percent": 40
-    },
-    {
-      "name": "Teen Titans Go!",
       "owned": 2,
       "total": 5,
       "percent": 40
@@ -3128,6 +3128,12 @@
       "percent": 37
     },
     {
+      "name": "KanColle: Kantai Collection",
+      "owned": 102,
+      "total": 285,
+      "percent": 36
+    },
+    {
       "name": "Epic Seven",
       "owned": 97,
       "total": 269,
@@ -3246,12 +3252,6 @@
       "owned": 4,
       "total": 11,
       "percent": 36
-    },
-    {
-      "name": "KanColle: Kantai Collection",
-      "owned": 101,
-      "total": 285,
-      "percent": 35
     },
     {
       "name": "Soul Tide",
@@ -5055,6 +5055,12 @@
     },
     {
       "name": "The Angel Next Door Spoils Me Rotten",
+      "owned": 1,
+      "total": 4,
+      "percent": 25
+    },
+    {
+      "name": "Aiming For The Alimony",
       "owned": 1,
       "total": 4,
       "percent": 25
